@@ -81,8 +81,9 @@ class FeatureExtract:
      
     def divide_lines(self, cloud):
         line_num = np.max(cloud[:, self.RING_INDEX]) + 1
-        self.used_line_num = int(line_num)
-        clouds_by_line = [cloud[cloud[:, self.RING_INDEX] == val, :] for val in range(0, self.used_line_num)]
+        # self.used_line_num = int(line_num)
+        self.used_line_num = np.sort(np.unique(cloud[:, self.RING_INDEX]).astype(np.int32))
+        clouds_by_line = [cloud[cloud[:, self.RING_INDEX] == val, :] for val in self.used_line_num]
         cloud_out = np.concatenate(clouds_by_line, axis=0)
         return cloud_out
      
@@ -91,8 +92,18 @@ class FeatureExtract:
         kernel[5] = -10
         curvatures = np.apply_along_axis(lambda x: np.convolve(x, kernel, 'same'), 0, cloud[:, :3])
         curvatures = np.sum(np.square(curvatures), axis=1)
-        scan_start_id = [np.where(cloud[:, self.RING_INDEX] == val)[0][0] + 5 for val in range(0, self.used_line_num)]
-        scan_end_id = [np.where(cloud[:, self.RING_INDEX] == val)[0][-1] - 5 for val in range(0, self.used_line_num)]
+        try: 
+            # scan_start_id = [np.where(cloud[:, self.RING_INDEX] == val)[0][0] + 5 for val in self.used_line_num]
+            # scan_end_id = [np.where(cloud[:, self.RING_INDEX] == val)[0][-1] - 5 for val in self.used_line_num]
+            scan_start_id = {}
+            scan_end_id = {}
+            for val in self.used_line_num:
+                scan_start_id[val] = np.where(cloud[:, self.RING_INDEX] == val)[0][0] + 5
+                scan_end_id[val] = np.where(cloud[:, self.RING_INDEX] == val)[0][-1] - 5
+            
+        except Exception as e:
+            print(e)
+            breakpoint()
         return curvatures, scan_start_id, scan_end_id
 
     def remove_occluded(self, cloud):
@@ -129,7 +140,7 @@ class FeatureExtract:
         index = np.expand_dims(index, axis=1).astype('float64')
         curvatures = np.expand_dims(curvatures, axis=1)
         curv_index = np.hstack((curvatures, index))
-        for scan_id in range(self.used_line_num):
+        for scan_id in self.used_line_num:
             """ TODO: Avoid empty line """
             for i in range(6):
                 sp = int((scan_start_id[scan_id] * (6-i) + scan_end_id[scan_id] * i) / 6)
