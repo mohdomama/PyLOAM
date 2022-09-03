@@ -1,9 +1,9 @@
 import numpy as np
 import open3d as o3d
-from feature_extract import FeatureExtract
+from pyloam.src.feature_extract import FeatureExtract
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
-from utils import *
+from pyloam.src.utils import *
 import math
 
 class Odometry:

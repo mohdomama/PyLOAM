@@ -5,10 +5,10 @@ import open3d as o3d
 
 def get_rotation(rx, ry, rz):
     r = R.from_euler('yxz', [ry, rx, rz], degrees=False)
-    return r.as_dcm()
+    return r.as_matrix()
 
 def get_euler_angles(rot_mat):
-    r = R.from_dcm(rot_mat)
+    r = R.from_matrix(rot_mat)
     deg = r.as_euler('yxz', degrees=False)
     return deg[1], deg[0], deg[2]
 
